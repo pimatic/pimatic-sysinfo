@@ -3,7 +3,7 @@ pimatic-sysinfo
 
 I'm another pimatic plugin.
 
-´´´json
+```json
 {
   "class": "SystemSensor",
   "id": "syssensor",
@@ -17,4 +17,4 @@ I'm another pimatic plugin.
     }
   ]
 }
-´´´
+```
