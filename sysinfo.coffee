@@ -58,7 +58,7 @@ module.exports = (env) ->
                     return Math.round(busy_delta / all_delta * 10000) / 100
                   else
                     lastCpuTimes = res
-                    return reschredule();
+                    return reschredule()
                 )
               )
               @attributes[name].unit = '%'
