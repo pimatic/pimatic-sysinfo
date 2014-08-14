@@ -77,7 +77,7 @@ module.exports = (env) ->
                 return fs.readFileAsync("/sys/class/thermal/thermal_zone0/temp")
                   .then( (rawTemp) -> (rawTemp / 1000) )
               )
-              @attributes[name].unit = '%'
+              @attributes[name].unit = '°C'
             else
               throw new Error("Illegal attribute name: #{name} in SystemSensor.")
           # Create a getter for this attribute
