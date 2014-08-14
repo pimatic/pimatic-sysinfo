@@ -16,7 +16,7 @@
   },
   "configSchema": "sysinfo-config-schema.coffee",
   "dependencies": {
-    "nsutil:" "git+https://github.com/sweetpi/nsutil.git#master"
+    "nsutil": "git+https://github.com/sweetpi/nsutil.git#master"
   },
   "peerDependencies": {
     "pimatic": "0.8.*"
