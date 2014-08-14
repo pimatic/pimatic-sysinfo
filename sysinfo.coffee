@@ -34,7 +34,7 @@ module.exports = (env) ->
       for attr, i in @config.attributes
         do (attr) =>
           name = attr.name
-          assert name in ['cpu', 'memory']
+          assert name in ['cpu', 'memory', "temperature"]
 
           @attributes[name] = {
             description: name
