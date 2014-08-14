@@ -75,7 +75,7 @@ module.exports = (env) ->
             when "temperature"
               getter = ( =>
                 return fs.readFileAsync("/sys/class/thermal/thermal_zone0/temp")
-                  .then( (rawTemp) -> (rawTemp / 1000) )
+                  .then( (rawTemp) -> (Math.round(rawTemp / 10) / 100) )
               )
               @attributes[name].unit = '°C'
             else
@@ -86,7 +86,7 @@ module.exports = (env) ->
             getter().then( (value) =>
               @emit name, value
             ).done()
-          ), 2000)
+          ), attr.interval or 2000)
       super()
 
   # ###Finally
