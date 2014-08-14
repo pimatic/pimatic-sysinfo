@@ -6,6 +6,9 @@ module.exports = (env) ->
   # Require the [cassert library](https://github.com/rhoot/cassert).
   assert = env.require 'cassert'
 
+  fs = env.require 'fs'
+  Promise.promisifyAll(fs)
+
   ns = require('nsutil')
   Promise.promisifyAll(ns)
 
@@ -69,6 +72,12 @@ module.exports = (env) ->
                 )
               )
               @attributes[name].unit = 'MB'
+            when "temperature"
+              getter = ( =>
+                return fs.readFileAsync("/sys/class/thermal/thermal_zone0/temp")
+                  .then( (rawTemp) -> (rawTemp / 1000) )
+              )
+              @attributes[name].unit = '%'
             else
               throw new Error("Illegal attribute name: #{name} in SystemSensor.")
           # Create a getter for this attribute
