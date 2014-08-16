@@ -1,7 +1,7 @@
 pimatic-sysinfo
 =======================
 
-I'm another pimatic plugin.
+pimatic plugin for displaying cpu, memory usage and temperature of the raspberry pi.
 
 ```json
 {
@@ -14,6 +14,9 @@ I'm another pimatic plugin.
     },
     {
       "name": "memory"
+    },
+    {
+      "name": "temperature"
     }
   ]
 }
