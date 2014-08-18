@@ -86,7 +86,7 @@ module.exports = (env) ->
             getter().then( (value) =>
               @emit name, value
             ).done()
-          ), attr.interval or 2000)
+          ), attr.interval or 10000)
       super()
 
   # ###Finally
