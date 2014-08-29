@@ -45,7 +45,7 @@ module.exports = (env) ->
             when "cpu"
               lastCpuTimes = null
               sum = (cput) -> cput.user + cput.nice + cput.system + cput.idle
-              reschredule = ( -> Promise.resolve().delay(1000).then( -> ns.cpuTimesAsync() ) )
+              reschredule = ( -> Promise.resolve().delay(1000).then( -> getter() ) )
               getter = ( => 
                 return ns.cpuTimesAsync().then( (res) => 
                   if lastCpuTimes?
