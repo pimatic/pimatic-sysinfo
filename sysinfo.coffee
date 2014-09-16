@@ -12,6 +12,8 @@ module.exports = (env) ->
   ns = require('nsutil')
   Promise.promisifyAll(ns)
 
+  path = require 'path'
+
   class SysinfoPlugin extends env.plugins.Plugin
 
     init: (app, @framework, @config) =>
@@ -34,7 +36,7 @@ module.exports = (env) ->
       for attr, i in @config.attributes
         do (attr) =>
           name = attr.name
-          assert name in ['cpu', 'memory', "temperature", "dbsize"]
+          assert name in ['cpu', 'memory', "temperature", "dbsize", "diskusage"]
 
           @attributes[name] = {
             description: name
@@ -72,6 +74,14 @@ module.exports = (env) ->
                 )
               )
               @attributes[name].unit = 'MB'
+            when "diskusage"
+              path = attr.path or '/'
+              getter = ( =>
+                return ns.diskUsageAsync(path).then( (res) =>
+                  return Math.round(res.used / res.total * 10000) / 100 
+                )
+              )
+              @attributes[name].unit = '%'
             when "temperature"
               getter = ( =>
                 return fs.readFileAsync("/sys/class/thermal/thermal_zone0/temp")
@@ -82,8 +92,9 @@ module.exports = (env) ->
               databaseConfig = framework.config.settings.database
               unless databaseConfig.client is "sqlite3"
                 throw new Error("dbsize is only supported for sqlite3")
+              filename = path.resolve framework.maindir, '../..', databaseConfig.connection.filename
               getter = ( =>
-                return fs.statAsync(databaseConfig.connection.filename).then( (stats) =>
+                return fs.statAsync(filename).then( (stats) =>
                   return Math.round( stats.size / (1000*1000) * 100) / 100
                 )
               )
@@ -95,7 +106,10 @@ module.exports = (env) ->
           setInterval( (=>
             getter().then( (value) =>
               @emit name, value
-            ).done()
+            ).catch( (error) =>
+              env.logger.error "error updating syssensor value for #{name}:", error.message
+              env.logger.debug error.stack
+            )
           ), attr.interval or 10000)
       super()
 
