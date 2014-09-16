@@ -19,13 +19,13 @@ module.exports = (env) ->
 
       @framework.deviceManager.registerDeviceClass("SystemSensor", {
         configDef: deviceConfigDef.SystemSensor, 
-        createCallback: (config) => return new SystemSensor(config)
+        createCallback: (config) => return new SystemSensor(config, framework)
       })
 
     # ##LogWatcher Sensor
   class SystemSensor extends env.devices.Sensor
 
-    constructor: (@config) ->
+    constructor: (@config, framework) ->
       @id = config.id
       @name = config.name
 
@@ -34,7 +34,7 @@ module.exports = (env) ->
       for attr, i in @config.attributes
         do (attr) =>
           name = attr.name
-          assert name in ['cpu', 'memory', "temperature"]
+          assert name in ['cpu', 'memory', "temperature", "dbsize"]
 
           @attributes[name] = {
             description: name
@@ -68,7 +68,7 @@ module.exports = (env) ->
             when "memory"
               getter = ( =>
                 return ns.virtualMemoryAsync().then( (res) =>
-                  return Math.round( (res.total - res.avail) / (1014*1024) * 100) / 100
+                  return Math.round( (res.total - res.avail) / (1000*1000) * 100) / 100
                 )
               )
               @attributes[name].unit = 'MB'
@@ -78,6 +78,16 @@ module.exports = (env) ->
                   .then( (rawTemp) -> (Math.round(rawTemp / 10) / 100) )
               )
               @attributes[name].unit = '°C'
+            when "dbsize"
+              databaseConfig = framework.config.settings.database
+              unless databaseConfig.client is "sqlite3"
+                throw new Error("dbsize is only supported for sqlite3")
+              getter = ( =>
+                return fs.statAsync(databaseConfig.connection.filename).then( (stats) =>
+                  return Math.round( stats.size / (1000*1000) * 100) / 100
+                )
+              )
+              @attributes[name].unit = 'MB'
             else
               throw new Error("Illegal attribute name: #{name} in SystemSensor.")
           # Create a getter for this attribute

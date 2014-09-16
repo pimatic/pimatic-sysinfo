@@ -3,6 +3,14 @@ pimatic-sysinfo
 
 pimatic plugin for displaying cpu, memory usage and temperature of the raspberry pi.
 
+### Supported values:
+
+* CPU usage: `"cpu"`
+* Memory usage: `"memory"`
+* RPI System temperature: `"temperature"`
+* pimatic sqlite database size: `"dbsize"`
+
+### Examples:
 
 ```json
 {
