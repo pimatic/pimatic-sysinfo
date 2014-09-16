@@ -5,7 +5,8 @@
   "files": [
     "sysinfo.coffee",
     "README.md",
-    "sysinfo-config-schema.coffee"
+    "sysinfo-config-schema.coffee",
+    "device-config-schema.coffee"
   ],
   "version": "0.8.3",
   "homepage": "http://github.com/pimatic/pimatic-sysinfo",
