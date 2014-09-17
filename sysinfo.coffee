@@ -75,9 +75,9 @@ module.exports = (env) ->
               )
               @attributes[name].unit = 'MB'
             when "diskusage"
-              path = attr.path or '/'
+              diskusagepath = attr.path or '/'
               getter = ( =>
-                return ns.diskUsageAsync(path).then( (res) =>
+                return ns.diskUsageAsync(diskusagepath).then( (res) =>
                   return Math.round(res.used / res.total * 10000) / 100 
                 )
               )
