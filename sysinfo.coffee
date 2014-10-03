@@ -47,9 +47,13 @@ module.exports = (env) ->
             when "cpu"
               lastCpuTimes = null
               sum = (cput) -> cput.user + cput.nice + cput.system + cput.idle
-              reschredule = ( -> Promise.resolve().delay(1000).then( -> getter() ) )
+              reschredule = ( -> Promise.resolve().delay(3000).then( -> getter() ) )
+              lastValue = null
+              lastTime = null
               getter = ( => 
-                return ns.cpuTimesAsync().then( (res) => 
+                return ns.cpuTimesAsync().then( (res) =>
+                  if lastValue? and (new Date().getTime() - lastTime) < 3000
+                    return lastValue
                   if lastCpuTimes?
                     lastAll = sum(lastCpuTimes)
                     lastBusy = lastAll - lastCpuTimes.idle
@@ -59,8 +63,9 @@ module.exports = (env) ->
                     all_delta = all - lastAll
                     if all_delta is 0
                       return reschredule()
-                    lastCpuTimes = res    
-                    return Math.round(busy_delta / all_delta * 10000) / 100
+                    lastCpuTimes = res
+                    lastTime = new Date().getTime()
+                    return lastValue = Math.round(busy_delta / all_delta * 10000) / 100
                   else
                     lastCpuTimes = res
                     return reschredule()
