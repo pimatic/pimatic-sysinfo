@@ -11,6 +11,12 @@ pimatic plugin for displaying cpu, memory usage and temperature of the raspberry
 * RPI System temperature: `"temperature"`
 * pimatic sqlite database size: `"dbsize"`
 
+```
+{ 
+  "plugin": "sysinfo"
+}
+```
+
 ### Examples:
 
 ```json
@@ -41,7 +47,8 @@ pimatic plugin for displaying cpu, memory usage and temperature of the raspberry
   "name": "System Temp.",
   "attributes": [
     {
-      "name": "temperature"
+      "name": "temperature",
+      "interval": 5000
     }
   ]
 }
