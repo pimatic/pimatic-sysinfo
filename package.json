@@ -6,7 +6,8 @@
     "sysinfo.coffee",
     "README.md",
     "sysinfo-config-schema.coffee",
-    "device-config-schema.coffee"
+    "device-config-schema.coffee",
+    "icon.svg"
   ],
   "version": "0.8.8",
   "homepage": "http://github.com/pimatic/pimatic-sysinfo",
@@ -15,6 +16,16 @@
     "url": "git://github.com/pimatic/pimatic-sysinfo.git"
   },
   "configSchema": "sysinfo-config-schema.coffee",
+  "icon": "icon.svg",
+  "keywords": [
+    "pimatic",
+    "devices",
+    "system info",
+    "sysinfo",
+    "cpu", 
+    "memory", 
+    "diskspace"
+  ],
   "dependencies": {
     "nsutil": "git+https://github.com/sweetpi/nsutil.git#master"
   },
