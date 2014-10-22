@@ -75,22 +75,22 @@ module.exports = (env) ->
             when "memory"
               getter = ( =>
                 return ns.virtualMemoryAsync().then( (res) =>
-                  return Math.round( (res.total - res.avail) / (1000*1000) * 100) / 100
+                  return res.total - res.avail
                 )
               )
-              @attributes[name].unit = 'MB'
+              @attributes[name].unit = 'B'
             when "diskusage"
               diskusagepath = attr.path or '/'
               getter = ( =>
                 return ns.diskUsageAsync(diskusagepath).then( (res) =>
-                  return Math.round(res.used / res.total * 10000) / 100 
+                  return res.used / res.total * 100
                 )
               )
               @attributes[name].unit = '%'
             when "temperature"
               getter = ( =>
                 return fs.readFileAsync("/sys/class/thermal/thermal_zone0/temp")
-                  .then( (rawTemp) -> (Math.round(rawTemp / 10) / 100) )
+                  .then( (rawTemp) -> rawTemp / 1000 )
               )
               @attributes[name].unit = '°C'
             when "dbsize"
@@ -100,10 +100,10 @@ module.exports = (env) ->
               filename = path.resolve framework.maindir, '../..', databaseConfig.connection.filename
               getter = ( =>
                 return fs.statAsync(filename).then( (stats) =>
-                  return Math.round( stats.size / (1000*1000) * 100) / 100
+                  return  stats.size
                 )
               )
-              @attributes[name].unit = 'MB'
+              @attributes[name].unit = 'B'
             else
               throw new Error("Illegal attribute name: #{name} in SystemSensor.")
           # Create a getter for this attribute
