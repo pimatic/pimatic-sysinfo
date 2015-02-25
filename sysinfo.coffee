@@ -36,7 +36,10 @@ module.exports = (env) ->
       for attr, i in @config.attributes
         do (attr) =>
           name = attr.name
-          assert name in ['cpu', 'memory', "temperature", "dbsize", "diskusage"]
+          assert name in [
+            'cpu', 'memory', "temperature", "dbsize", "diskusage", 
+            "memoryRss","memoryHeapUsed", "memoryHeapTotal"
+          ]
 
           @attributes[name] = {
             description: name
@@ -78,6 +81,15 @@ module.exports = (env) ->
                   return res.total - res.avail
                 )
               )
+              @attributes[name].unit = 'B'
+            when "memoryRss"
+              getter = ( => Promise.resolve(process.memoryUsage().rss) )
+              @attributes[name].unit = 'B'
+            when "memoryHeapUsed"
+              getter = ( => Promise.resolve(process.memoryUsage().heapUsed) )
+              @attributes[name].unit = 'B'
+            when "memoryHeapTotal"
+              getter = ( => Promise.resolve(process.memoryUsage().heapTotal) )
               @attributes[name].unit = 'B'
             when "diskusage"
               diskusagepath = attr.path or '/'
