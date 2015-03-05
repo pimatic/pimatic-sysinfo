@@ -75,6 +75,7 @@ module.exports = (env) ->
                 )
               )
               @attributes[name].unit = '%'
+              @attributes[name].acronym = 'CPU'
             when "memory"
               getter = ( =>
                 return ns.virtualMemoryAsync().then( (res) =>
@@ -82,15 +83,19 @@ module.exports = (env) ->
                 )
               )
               @attributes[name].unit = 'B'
+              @attributes[name].acronym = 'MEM'
             when "memoryRss"
               getter = ( => Promise.resolve(process.memoryUsage().rss) )
               @attributes[name].unit = 'B'
+              @attributes[name].acronym = 'RSS'
             when "memoryHeapUsed"
               getter = ( => Promise.resolve(process.memoryUsage().heapUsed) )
               @attributes[name].unit = 'B'
+              @attributes[name].acronym = 'HEAP'
             when "memoryHeapTotal"
               getter = ( => Promise.resolve(process.memoryUsage().heapTotal) )
               @attributes[name].unit = 'B'
+              @attributes[name].acronym = 'THEAP'
             when "diskusage"
               diskusagepath = attr.path or '/'
               getter = ( =>
@@ -99,12 +104,14 @@ module.exports = (env) ->
                 )
               )
               @attributes[name].unit = '%'
+              @attributes[name].acronym = 'DISK'
             when "temperature"
               getter = ( =>
                 return fs.readFileAsync("/sys/class/thermal/thermal_zone0/temp")
                   .then( (rawTemp) -> rawTemp / 1000 )
               )
               @attributes[name].unit = '°C'
+              @attributes[name].acronym = 'T'
             when "dbsize"
               databaseConfig = framework.config.settings.database
               unless databaseConfig.client is "sqlite3"
@@ -116,6 +123,7 @@ module.exports = (env) ->
                 )
               )
               @attributes[name].unit = 'B'
+              @attributes[name].acronym = 'DB'
             else
               throw new Error("Illegal attribute name: #{name} in SystemSensor.")
           # Create a getter for this attribute
