@@ -3,7 +3,7 @@ module.exports = {
   SystemSensor: {
     title: "SystemSensor config options"
     type: "object"
-    extensions: ["xLink"]
+    extensions: ["xLink", "xAttributeOptions"]
     properties:
       attributes:
         description: "Attributes of the device"
