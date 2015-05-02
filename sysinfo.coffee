@@ -7,6 +7,7 @@ module.exports = (env) ->
   assert = env.require 'cassert'
 
   fs = env.require 'fs'
+  os = env.require 'os'
   Promise.promisifyAll(fs)
 
   ns = require('nsutil')
@@ -38,7 +39,7 @@ module.exports = (env) ->
           name = attr.name
           assert name in [
             'cpu', 'memory', "temperature", "dbsize", "diskusage", 
-            "memoryRss","memoryHeapUsed", "memoryHeapTotal"
+            "memoryRss","memoryHeapUsed", "memoryHeapTotal", "uptime"
           ]
 
           @attributes[name] = {
@@ -124,6 +125,10 @@ module.exports = (env) ->
               )
               @attributes[name].unit = 'B'
               @attributes[name].acronym = 'DB'
+            when "uptime"
+              getter = ( => Promise.resolve(os.uptime()) )
+              @attributes[name].unit = 's'
+              @attributes[name].acronym = 'UP'
             else
               throw new Error("Illegal attribute name: #{name} in SystemSensor.")
           # Create a getter for this attribute
