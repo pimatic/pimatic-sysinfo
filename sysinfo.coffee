@@ -22,15 +22,15 @@ module.exports = (env) ->
 
       @framework.deviceManager.registerDeviceClass("SystemSensor", {
         configDef: deviceConfigDef.SystemSensor, 
-        createCallback: (config) => return new SystemSensor(config, framework)
+        createCallback: (config) => return new SystemSensor(config, @framework)
       })
 
     # ##LogWatcher Sensor
   class SystemSensor extends env.devices.Sensor
 
     constructor: (@config, framework) ->
-      @id = config.id
-      @name = config.name
+      @id = @config.id
+      @name = @config.name
 
       @attributes = {}
       # initialise all attributes
