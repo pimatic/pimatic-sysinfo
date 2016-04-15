@@ -38,7 +38,7 @@ module.exports = (env) ->
         do (attr) =>
           name = attr.name
           assert name in [
-            'cpu', 'memory', "temperature", "dbsize", "diskusage", 
+            'cpu', 'memory', "temperature", "dbsize", "diskusage",
             "memoryRss","memoryHeapUsed", "memoryHeapTotal", "uptime"
           ]
 
@@ -133,14 +133,11 @@ module.exports = (env) ->
               throw new Error("Illegal attribute name: #{name} in SystemSensor.")
           # Create a getter for this attribute
           @_createGetter(name, getter)
-          setInterval( (=>
-            getter().then( (value) =>
-              @emit name, value
-            ).catch( (error) =>
-              env.logger.error "error updating syssensor value for #{name}:", error.message
-              env.logger.debug error.stack
-            )
-          ), attr.interval or 10000)
+          # setup polling
+          @_setupPolling(name, attr.interval or 10000)
+      super()
+
+    destroy: ->
       super()
 
   # ###Finally
