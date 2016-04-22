@@ -5,6 +5,7 @@
   "license": "GPL-2.0",
   "main": "sysinfo",
   "files": [
+    "LICENSE",
     "sysinfo.coffee",
     "README.md",
     "sysinfo-config-schema.coffee",
