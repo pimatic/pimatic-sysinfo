@@ -39,7 +39,7 @@ module.exports = (env) ->
           name = attr.name
           assert name in [
             'cpu', 'memory', "memoryPercent", "processes",
-            "temperature", "dbsize", "diskusage",
+            "temperature", "temperatureF", "dbsize", "diskusage",
             "memoryRss","memoryHeapUsed", "memoryHeapTotal", "uptime"
           ]
 
@@ -113,6 +113,16 @@ module.exports = (env) ->
                 )
               )
               @attributes[name].unit = '°C'
+              @attributes[name].acronym = 'T'
+            when "temperatureF"
+              getter = ( =>
+                return si.cpuTemperature().then( (res) ->
+                  if res.main >= 0
+                    return (res.main * 1.8 / 1000) + 32
+                  else
+                    return res.main
+              )
+              @attributes[name].unit = '°F'
               @attributes[name].acronym = 'T'
             when "dbsize"
               databaseConfig = framework.config.settings.database

@@ -10,7 +10,8 @@ pimatic plugin for displaying cpu, memory usage and temperature of the raspberry
 * Memory usage (percent): `"memoryPercent"`
 * Disk usage (percent) for a single mount point: `"diskusage"`
 * Number of processes: `"processes"`
-* System temperature: `"temperature"`
+* System temperature (Celsius ℃): `"temperature"`
+* System temperature (Fahrenheit ℉): `"temperatureF"`
 * System uptime in seconds: `"uptime"`
 * Pimatic SQLite database size (bytes): `"dbsize"`
 * Pimatic process RSS memory (bytes):  `"rss"`
