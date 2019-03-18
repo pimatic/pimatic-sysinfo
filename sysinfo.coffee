@@ -118,7 +118,7 @@ module.exports = (env) ->
               getter = ( =>
                 return si.cpuTemperature().then( (res) ->
                   if res.main >= 0
-                    return (res.main * 1.8 / 1000) + 32
+                    return (res.main * 9/5) + 32
                   else
                     return res.main
                 )
