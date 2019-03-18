@@ -77,6 +77,11 @@ Notes:
   temperature with the underlying `wmic` tool. If you're running on Linux,
   please report an issue with the Linux distribution, version and hardware 
   used.
+  
+* I would like to display the uptime in a human readable format
+
+  You can set the `displayFormat xAttributeOption` for attribute `uptime`to the
+  value `uptime`. 
 
 ### Credits
 
