@@ -5,20 +5,33 @@ pimatic plugin for displaying cpu, memory usage and temperature of the raspberry
 
 ### Supported values:
 
-* CPU usage: `"cpu"`
-* Memory usage: `"memory"`
-* Disk usage: `"diskusage"`
-* RPI System temperature: `"temperature"`
-* pimatic sqlite database size: `"dbsize"`
+* CPU usage (percent): `"cpu"`
+* Memory usage (bytes): `"memory"`
+* Memory usage (percent): `"memoryPercent"`
+* Disk usage (percent) for a single mount point: `"diskusage"`
+* Number of processes: `"processes"`
+* System temperature: `"temperature"`
 * System uptime in seconds: `"uptime"`
+* Pimatic SQLite database size (bytes): `"dbsize"`
+* Pimatic process RSS memory (bytes):  `"rss"`
+* Pimatic process used heap memory (bytes):  `"heapUsed"`
+* Pimatic process total heap memory (bytes):  `"heapTotal"`
 
+Notes:
+* RSS is the amount of space occupied in the main memory device 
+  (that is a subset of the total allocated memory) for the 
+  process, which includes the heap, code segment and stack
+  
+### Plugin Configuration
 ```
 { 
   "plugin": "sysinfo"
 }
 ```
 
-### Examples:
+### Device Configuration
+
+#### Examples:
 
 ```json
 {
@@ -54,6 +67,15 @@ pimatic plugin for displaying cpu, memory usage and temperature of the raspberry
   ]
 }
 ```
+
+### Trouble Shooting
+
+* The value for `temperature`is -1
+    
+  On Windows, admin privileges are required in some setups to query the 
+  temperature with the underlying `wmic` tool. If you're running on Linux,
+  please report an issue with the Linux distribution, version and hardware 
+  used.
 
 ### Credits
 

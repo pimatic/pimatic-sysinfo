@@ -30,7 +30,7 @@
     "diskspace"
   ],
   "dependencies": {
-    "nsutil": "git+https://github.com/sweetpi/nsutil.git#nsutil-update"
+    "systeminformation": "^4.1.1"
   },
   "peerDependencies": {
     "pimatic": "0.9.*"

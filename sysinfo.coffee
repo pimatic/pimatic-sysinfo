@@ -10,8 +10,8 @@ module.exports = (env) ->
   os = env.require 'os'
   Promise.promisifyAll(fs)
 
-  ns = require('nsutil')
-  Promise.promisifyAll(ns)
+  si = require('systeminformation');
+
 
   path = require 'path'
 
@@ -38,7 +38,8 @@ module.exports = (env) ->
         do (attr) =>
           name = attr.name
           assert name in [
-            'cpu', 'memory', "temperature", "dbsize", "diskusage",
+            'cpu', 'memory', "memoryPercent", "processes",
+            "temperature", "dbsize", "diskusage",
             "memoryRss","memoryHeapUsed", "memoryHeapTotal", "uptime"
           ]
 
@@ -49,42 +50,37 @@ module.exports = (env) ->
 
           switch name
             when "cpu"
-              lastCpuTimes = null
-              sum = (cput) -> cput.user + cput.nice + cput.system + cput.idle
-              reschredule = ( -> Promise.resolve().delay(3000).then( -> getter() ) )
-              lastValue = null
-              lastTime = null
-              getter = ( => 
-                return ns.cpuTimesAsync().then( (res) =>
-                  if lastValue? and (new Date().getTime() - lastTime) < 3000
-                    return lastValue
-                  if lastCpuTimes?
-                    lastAll = sum(lastCpuTimes)
-                    lastBusy = lastAll - lastCpuTimes.idle
-                    all = sum(res)
-                    busy = all - res.idle
-                    busy_delta = busy - lastBusy
-                    all_delta = all - lastAll
-                    if all_delta is 0
-                      return reschredule()
-                    lastCpuTimes = res
-                    lastTime = new Date().getTime()
-                    return lastValue = Math.round(busy_delta / all_delta * 10000) / 100
-                  else
-                    lastCpuTimes = res
-                    return reschredule()
+              getter = ( =>
+                return si.currentLoad().then( (res) =>
+                  return Math.round(res.currentload * 10) / 10
                 )
               )
               @attributes[name].unit = '%'
               @attributes[name].acronym = 'CPU'
             when "memory"
               getter = ( =>
-                return ns.virtualMemoryAsync().then( (res) =>
-                  return res.total - res.avail
+                return si.mem().then( (res) =>
+                  return res.used
                 )
               )
               @attributes[name].unit = 'B'
               @attributes[name].acronym = 'MEM'
+            when "memoryPercent"
+              getter = ( =>
+                return si.mem().then( (res) =>
+                  return Math.round(res.used / res.total * 1000) / 10
+                )
+              )
+              @attributes[name].unit = '%'
+              @attributes[name].acronym = 'MEMP'
+            when "processes"
+              getter = ( =>
+                return si.processes().then( (res) =>
+                  return res.all
+                )
+              )
+              @attributes[name].unit = ''
+              @attributes[name].acronym = 'PROCS'
             when "memoryRss"
               getter = ( => Promise.resolve(process.memoryUsage().rss) )
               @attributes[name].unit = 'B'
@@ -98,18 +94,23 @@ module.exports = (env) ->
               @attributes[name].unit = 'B'
               @attributes[name].acronym = 'THEAP'
             when "diskusage"
-              diskusagepath = attr.path or '/'
+              mountPath = attr.path?.toUpperCase() or '/'
               getter = ( =>
-                return ns.diskUsageAsync(diskusagepath).then( (res) =>
-                  return res.used / res.total * 100
+                return si.fsSize().then( (res) =>
+                  match = (res.filter (i) -> i.mount.toUpperCase() is mountPath)
+                  if match.length > 0
+                    return Math.round(match[0].use * 10) / 10
+                  else
+                    return -1
                 )
               )
               @attributes[name].unit = '%'
               @attributes[name].acronym = 'DISK'
             when "temperature"
               getter = ( =>
-                return fs.readFileAsync("/sys/class/thermal/thermal_zone0/temp")
-                  .then( (rawTemp) -> rawTemp / 1000 )
+                return si.cpuTemperature().then( (res) =>
+                  return Math.round(res.main * 10) / 10
+                )
               )
               @attributes[name].unit = '°C'
               @attributes[name].acronym = 'T'

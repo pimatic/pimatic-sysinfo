@@ -15,7 +15,10 @@ module.exports = {
             name:
               type: "string"
               description: "The sensor"
-              enum: ["cpu", "memory", "temperature", "dbsize", "diskusage", "memoryRss", "memoryHeapUsed", "memoryHeapTotal", "uptime"]
+              enum: [
+                "cpu", "memory", "memoryPercent", "processes", "temperature", "dbsize",
+                "diskusage", "memoryRss", "memoryHeapUsed", "memoryHeapTotal", "uptime"
+              ]
             interval:
               type: "integer"
               description: "Polling interval in ms"
