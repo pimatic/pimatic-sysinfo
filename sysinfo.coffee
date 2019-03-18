@@ -10,7 +10,7 @@ module.exports = (env) ->
   os = env.require 'os'
   Promise.promisifyAll(fs)
 
-  si = require('systeminformation');
+  si = require('systeminformation')
 
 
   path = require 'path'
@@ -25,7 +25,7 @@ module.exports = (env) ->
         createCallback: (config) => return new SystemSensor(config, @framework)
       })
 
-    # ##LogWatcher Sensor
+  # ##SystemSensor Sensor
   class SystemSensor extends env.devices.Sensor
 
     constructor: (@config, framework) ->
@@ -121,6 +121,7 @@ module.exports = (env) ->
                     return (res.main * 1.8 / 1000) + 32
                   else
                     return res.main
+                )
               )
               @attributes[name].unit = '°F'
               @attributes[name].acronym = 'T'
@@ -152,7 +153,7 @@ module.exports = (env) ->
       super()
 
   # ###Finally
-  # Create a instance of my plugin
+  # Create a instance of SysinfoPlugin
   sysinfoPlugin = new SysinfoPlugin
   # and return it to the framework.
   return sysinfoPlugin

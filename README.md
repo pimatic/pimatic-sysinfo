@@ -14,9 +14,9 @@ pimatic plugin for displaying cpu, memory usage and temperature of the raspberry
 * System temperature (Fahrenheit ℉): `"temperatureF"`
 * System uptime in seconds: `"uptime"`
 * Pimatic SQLite database size (bytes): `"dbsize"`
-* Pimatic process RSS memory (bytes):  `"rss"`
-* Pimatic process used heap memory (bytes):  `"heapUsed"`
-* Pimatic process total heap memory (bytes):  `"heapTotal"`
+* Pimatic process RSS memory (bytes): `"rss"`
+* Pimatic process used heap memory (bytes): `"heapUsed"`
+* Pimatic process total heap memory (bytes): `"heapTotal"`
 
 Notes:
 * RSS is the amount of space occupied in the main memory device 
@@ -71,7 +71,7 @@ Notes:
 
 ### Trouble Shooting
 
-* The value for `temperature`is -1
+* The value for `temperature` is -1
     
   On Windows, admin privileges are required in some setups to query the 
   temperature with the underlying `wmic` tool. If you're running on Linux,
