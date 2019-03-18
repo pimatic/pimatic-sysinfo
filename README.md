@@ -1,7 +1,8 @@
 pimatic-sysinfo
 ===============
 
-pimatic plugin for displaying cpu, memory usage and temperature of the raspberry pi.
+Plugin for displaying cpu, memory usage and temperature of the pimatic system. It supports pimatic setups on 
+Windows, Linux, and MacOS.
 
 ### Supported values:
 
@@ -24,6 +25,7 @@ Notes:
   process, which includes the heap, code segment and stack
   
 ### Plugin Configuration
+
 ```
 { 
   "plugin": "sysinfo"
