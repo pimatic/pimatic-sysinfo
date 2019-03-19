@@ -9,20 +9,27 @@ Windows, Linux, and MacOS.
 * CPU usage (percent): `"cpu"`
 * Memory usage (bytes): `"memory"`
 * Memory usage (percent): `"memoryPercent"`
-* Disk usage (percent) for a single mount point: `"diskusage"`
+* Disk usage (percent) for a single mount point: `"diskUsage"`
 * Number of processes: `"processes"`
 * System temperature (Celsius ℃): `"temperature"`
 * System temperature (Fahrenheit ℉): `"temperatureF"`
 * System uptime in seconds: `"uptime"`
-* Pimatic SQLite database size (bytes): `"dbsize"`
+* Pimatic SQLite database size (bytes): `"dbSize"`
 * Pimatic process RSS memory (bytes): `"rss"`
 * Pimatic process used heap memory (bytes): `"heapUsed"`
 * Pimatic process total heap memory (bytes): `"heapTotal"`
+* WiFi received signal level (dBm): `wifiSignalLevel` 
 
 Notes:
+* Database size is only applicable if builtin SQLite database
+  is being used
 * RSS is the amount of space occupied in the main memory device 
   (that is a subset of the total allocated memory) for the 
   process, which includes the heap, code segment and stack
+* The attribute `wifiSignalLevel` is currently only supported on Linux
+* The spelling for attribute names`"diskUsage"` and `"dbSize"` has been
+  changed in release 0.9.5. Configuration files for earlier releases
+  will be transformed automatically 
   
 ### Plugin Configuration
 
@@ -39,7 +46,7 @@ Notes:
 ```json
 {
   "class": "SystemSensor",
-  "id": "syssensor",
+  "id": "system-info",
   "name": "System",
   "attributes": [
     {
@@ -49,7 +56,7 @@ Notes:
       "name": "memory"
     },
     {
-      "name": "diskusage",
+      "name": "diskUsage",
       "path": "/"
     }
   ]
@@ -60,7 +67,7 @@ Notes:
 ```json
 {
   "class": "SystemSensor",
-  "id": "syssensor",
+  "id": "system-temp",
   "name": "System Temp.",
   "attributes": [
     {

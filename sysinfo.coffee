@@ -7,13 +7,42 @@ module.exports = (env) ->
   assert = env.require 'cassert'
 
   fs = env.require 'fs'
-  os = env.require 'os'
   Promise.promisifyAll(fs)
 
   si = require('systeminformation')
 
 
-  path = require 'path'
+  wifiStatus = (ifName) ->
+    if process.platform is 'linux'
+
+      parseBlock = (block) ->
+        parsed = undefined
+        if block?
+          parsed = {
+            interface: block.match(/^([^\s]+)/)[1]
+          }
+          if (match = block.match(/Signal level[:|=]\s*(-?[0-9]+)/))
+            parsed.signal = parseInt(match[1], 10);
+        return parsed
+
+      parseStatusInterface = (callback) ->
+        return (error, stdout, stderr) ->
+          if (error)
+            callback(error)
+          else
+            callback(error, parseBlock(stdout.trim()))
+
+      return new Promise (resolve, reject) ->
+        (require 'child_process').exec('iwconfig ' + ifName,
+          parseStatusInterface (err, data) ->
+            if err?
+              reject err
+            else
+              resolve data
+          )
+    else
+      throw new Error("WiFi signal strength monitoring is only supported on Linux")
+
 
   class SysinfoPlugin extends env.plugins.Plugin
 
@@ -21,12 +50,21 @@ module.exports = (env) ->
       deviceConfigDef = require("./device-config-schema")
 
       @framework.deviceManager.registerDeviceClass("SystemSensor", {
+        prepareConfig: SystemSensor.prepareConfig,
         configDef: deviceConfigDef.SystemSensor, 
         createCallback: (config) => return new SystemSensor(config, @framework)
       })
 
   # ##SystemSensor Sensor
   class SystemSensor extends env.devices.Sensor
+    @prepareConfig: (config) =>
+      for attr in config.attributes
+        do (attr) =>
+          if attr.name is 'diskusage'
+            attr.name = 'diskUsage'
+          else if attr.name is 'dbsize'
+            attr.name = 'dbSize'
+
 
     constructor: (@config, framework) ->
       @id = @config.id
@@ -39,8 +77,9 @@ module.exports = (env) ->
           name = attr.name
           assert name in [
             'cpu', 'memory', "memoryPercent", "processes",
-            "temperature", "temperatureF", "dbsize", "diskusage",
-            "memoryRss","memoryHeapUsed", "memoryHeapTotal", "uptime"
+            "temperature", "temperatureF", "dbSize", "diskUsage",
+            "memoryRss","memoryHeapUsed", "memoryHeapTotal", "uptime",
+            "wifiSignalLevel"
           ]
 
           @attributes[name] = {
@@ -93,7 +132,7 @@ module.exports = (env) ->
               getter = ( => Promise.resolve(process.memoryUsage().heapTotal) )
               @attributes[name].unit = 'B'
               @attributes[name].acronym = 'THEAP'
-            when "diskusage"
+            when "diskUsage"
               mountPath = attr.path?.toUpperCase() or '/'
               getter = ( =>
                 return si.fsSize().then( (res) =>
@@ -125,10 +164,11 @@ module.exports = (env) ->
               )
               @attributes[name].unit = '°F'
               @attributes[name].acronym = 'T'
-            when "dbsize"
+            when "dbSize"
+              path = env.require 'path'
               databaseConfig = framework.config.settings.database
               unless databaseConfig.client is "sqlite3"
-                throw new Error("dbsize is only supported for sqlite3")
+                throw new Error("dbSize is only supported for SQLite3")
               filename = path.resolve framework.maindir, '../..', databaseConfig.connection.filename
               getter = ( =>
                 return fs.statAsync(filename).then( (stats) =>
@@ -138,9 +178,19 @@ module.exports = (env) ->
               @attributes[name].unit = 'B'
               @attributes[name].acronym = 'DB'
             when "uptime"
+              os = env.require 'os'
               getter = ( => Promise.resolve(os.uptime()) )
               @attributes[name].unit = 's'
               @attributes[name].acronym = 'UP'
+            when "wifiSignalLevel"
+              wifiInterface = attr.wifiInterface or 'wlan0'
+              getter = ( =>
+                return wifiStatus(wifiInterface).then( (res) =>
+                  return res.signal
+                )
+              )
+              @attributes[name].unit = 'dBm'
+              @attributes[name].acronym = 'RSL'
             else
               throw new Error("Illegal attribute name: #{name} in SystemSensor.")
           # Create a getter for this attribute
@@ -153,7 +203,7 @@ module.exports = (env) ->
       super()
 
   # ###Finally
-  # Create a instance of SysinfoPlugin
-  sysinfoPlugin = new SysinfoPlugin
+  # Create a instance of SysInfoPlugin
+  sysInfoPlugin = new SysinfoPlugin
   # and return it to the framework.
-  return sysinfoPlugin
+  return sysInfoPlugin
