@@ -16,10 +16,13 @@ module.exports = {
               type: "string"
               description: "The sensor"
               enum: [
-                "cpu", "memory", "memoryPercent", "processes",
+                "cpu", "usedMemory", "usedMemoryPercent",
+                "freeMemory", "freeMemoryPercent", "processes",
                 "temperature", "temperatureF", "dbSize",
-                "diskUsage", "memoryRss", "memoryHeapUsed",
-                "memoryHeapTotal", "uptime", "wifiSignalLevel"
+                "diskUsagePercent", "memoryRss",
+                "memoryHeapUsed", "memoryHeapTotal",
+                "pimaticUptime", "systemUptime", "wifiSignalLevel"
+                "nwThroughputReceived", "nwThroughputSent"
               ]
             interval:
               type: "integer"
@@ -27,11 +30,17 @@ module.exports = {
               default: 10000
             path:
               type: "string"
-              description: "Path (only for diskusage)"
+              description: """
+                Path (only applicable for diskUsagePercent)
+              """
               default: "/"
-            wifiInterface:
+            networkInterface:
               type: "string"
-              description: "WiFi network interface name (only for wifiSignalLevel)"
+              description: """
+                Network interface name (only applicable for
+                wifiSignalLevel, nwThroughputReceived, and
+                nwThroughputSent)
+              """
               default: "wlan0"
   }
 }

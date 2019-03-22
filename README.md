@@ -7,18 +7,23 @@ Windows, Linux, and MacOS.
 ### Supported values:
 
 * CPU usage (percent): `"cpu"`
-* Memory usage (bytes): `"memory"`
-* Memory usage (percent): `"memoryPercent"`
+* Memory usage (bytes): `"memoryUsed"`
+* Memory usage (percent): `"memoryUsedPercent"`
+* Memory free (bytes): `"memoryFree"`
+* Memory free (percent): `"memoryFreePercent"`
 * Disk usage (percent) for a single mount point: `"diskUsage"`
 * Number of processes: `"processes"`
 * System temperature (Celsius ℃): `"temperature"`
 * System temperature (Fahrenheit ℉): `"temperatureF"`
-* System uptime in seconds: `"uptime"`
+* System uptime in seconds: `"systemUptime"`
 * Pimatic SQLite database size (bytes): `"dbSize"`
 * Pimatic process RSS memory (bytes): `"rss"`
 * Pimatic process used heap memory (bytes): `"heapUsed"`
 * Pimatic process total heap memory (bytes): `"heapTotal"`
+* Pimatic process uptime (seconds): `"pimaticUptime"`
 * WiFi received signal level (dBm): `wifiSignalLevel` 
+* Network interface throughput received (bps): `nwThroughputReceived` 
+* Network interface throughput sent (bps): `nwThroughputSent` 
 
 Notes:
 * Database size is only applicable if builtin SQLite database
@@ -27,9 +32,18 @@ Notes:
   (that is a subset of the total allocated memory) for the 
   process, which includes the heap, code segment and stack
 * The attribute `wifiSignalLevel` is currently only supported on Linux
-* The spelling for attribute names`"diskUsage"` and `"dbSize"` has been
-  changed in release 0.9.5. Configuration files for earlier releases
-  will be transformed automatically 
+* The spelling for some attributes has been changed in release 0.9.5. The device 
+  configuration setup for earlier releases will be transformed 
+  automatically. However, you may need to update references in rule and
+  variable definitions. See table below.
+
+| old | new |
+|:----|-----|
+| diskusage | diskUsagePercent |
+| dbsize | dbSize |
+| uptime | systemUptime |
+| memory | memoryUsed |
+
   
 ### Plugin Configuration
 
@@ -53,10 +67,10 @@ Notes:
       "name": "cpu"
     },
     {
-      "name": "memory"
+      "name": "memoryUsed"
     },
     {
-      "name": "diskUsage",
+      "name": "diskUsagePercent",
       "path": "/"
     }
   ]
@@ -89,8 +103,8 @@ Notes:
   
 * I would like to display the uptime in a human readable format
 
-  You can set the `displayFormat xAttributeOption` for attribute `uptime`to the
-  value `uptime`. 
+  You can set the `displayFormat xAttributeOption` for attribute `systemUptime`
+  or `pimaticUptime` to the value `uptime`. 
 
 ### Credits
 
