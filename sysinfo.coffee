@@ -54,6 +54,12 @@ module.exports = (env) ->
         configDef: deviceConfigDef.SystemSensor, 
         createCallback: (config) => return new SystemSensor(config, @framework)
       })
+      si.fsSize().then( (data) ->
+        env.logger.info('Mounted File Systems: ' + data.map((el) -> el.fs).join(", "))
+      )
+      si.networkInterfaces().then( (data) ->
+        env.logger.info('Network Interfaces: ' + data.map((el) -> el.iface).join(", "))
+      )
 
   # ##SystemSensor Sensor
   class SystemSensor extends env.devices.Sensor
@@ -106,7 +112,7 @@ module.exports = (env) ->
               @attributes[name].acronym = 'CPU'
             when "usedMemory"
               getter = ( =>
-                return si.mem().then( (res) =>
+                return si.mem().then( (res) ->
                   return res.used
                 )
               )
@@ -114,7 +120,7 @@ module.exports = (env) ->
               @attributes[name].acronym = 'M USED'
             when "usedMemoryPercent"
               getter = ( =>
-                return si.mem().then( (res) =>
+                return si.mem().then( (res) ->
                   return Math.round(res.used / res.total * 1000) / 10
                 )
               )
@@ -122,7 +128,7 @@ module.exports = (env) ->
               @attributes[name].acronym = 'M USED%'
             when "freeMemory"
               getter = ( =>
-                return si.mem().then( (res) =>
+                return si.mem().then( (res) ->
                   return res.free
                 )
               )
@@ -130,7 +136,7 @@ module.exports = (env) ->
               @attributes[name].acronym = 'M FREE'
             when "freeMemoryPercent"
               getter = ( =>
-                return si.mem().then( (res) =>
+                return si.mem().then( (res) ->
                     return Math.round(res.free / res.total * 1000) / 10
                 )
               )
@@ -138,7 +144,7 @@ module.exports = (env) ->
               @attributes[name].acronym = 'M FREE%'
             when "processes"
               getter = ( =>
-                return si.processes().then( (res) =>
+                return si.processes().then( (res) ->
                   return res.all
                 )
               )
@@ -159,7 +165,7 @@ module.exports = (env) ->
             when "diskUsagePercent"
               mountPath = attr.path?.toUpperCase() or '/'
               getter = ( =>
-                return si.fsSize().then( (res) =>
+                return si.fsSize().then( (res) ->
                   match = (res.filter (i) -> i.mount.toUpperCase() is mountPath)
                   if match.length > 0
                     return Math.round(match[0].use * 10) / 10
@@ -171,7 +177,7 @@ module.exports = (env) ->
               @attributes[name].acronym = 'DISK%'
             when "temperature"
               getter = ( =>
-                return si.cpuTemperature().then( (res) =>
+                return si.cpuTemperature().then( (res) ->
                   return Math.round(res.main * 10) / 10
                 )
               )
@@ -195,7 +201,7 @@ module.exports = (env) ->
                 throw new Error("dbSize is only supported for SQLite3")
               filename = path.resolve framework.maindir, '../..', databaseConfig.connection.filename
               getter = ( =>
-                return fs.statAsync(filename).then( (stats) =>
+                return fs.statAsync(filename).then( (stats) ->
                   return  stats.size
                 )
               )
@@ -213,51 +219,31 @@ module.exports = (env) ->
             when "wifiSignalLevel"
               networkInterface = attr.networkInterface or 'wlan0'
               getter = ( =>
-                return wifiStatus(networkInterface).then( (res) =>
+                return wifiStatus(networkInterface).then( (res) ->
                   return res.signal
                 )
               )
               @attributes[name].unit = 'dBm'
               @attributes[name].acronym = 'RSL'
             when "nwThroughputReceived"
-              lastBytesReceived = 0
-              rxThroughput = 0
-              interval = attr.interval or 10000
-              networkInterface = attr.networkInterface or 'eth0'
-              @attributes[name].additionalCB = ( =>
-                return si.networkStats(networkInterface).then( (res) =>
-                  if res[0].operstate is 'unknown'
+              getter = ( =>
+                return si.networkStats(networkInterface).then( (res) ->
+                  if not res[0]? or res[0].operstate is 'unknown'
                     throw new Error "Network interface is not available. Check interface name"
                   else
-                    if lastBytesReceived isnt 0
-                      rxThroughput = (res[0].rx_bytes - lastBytesReceived) * 8 / (interval / 1000)
-                    lastBytesReceived = res[0].rx_bytes
-                  return rxThroughput
+                    return res[0].rx_sec * 8
                 )
-              )
-              getter = ( =>
-                return Promise.resolve rxThroughput
               )
               @attributes[name].unit = 'bps'
               @attributes[name].acronym = 'NET RX'
             when "nwThroughputSent"
-              lastBytesSent = 0
-              txThroughput = 0
-              interval = attr.interval or 10000
-              networkInterface = attr.networkInterface or 'eth0'
-              @attributes[name].additionalCB = ( =>
-                return si.networkStats(networkInterface).then( (res) =>
-                  if res.length is 0 or res[0].operstate is 'unknown'
+              getter = ( =>
+                return si.networkStats(networkInterface).then( (res) ->
+                  if not res[0]? or res[0].operstate is 'unknown'
                     throw new Error "Network interface is not available. Check interface name"
                   else
-                    if lastBytesSent isnt 0
-                      txThroughput = (res[0].tx_bytes - lastBytesSent) * 8 / (interval / 1000)
-                    lastBytesSent = res[0].tx_bytes
-                  return txThroughput
+                    return res[0].tx_sec * 8
                 )
-              )
-              getter = ( =>
-                return Promise.resolve txThroughput
               )
               @attributes[name].unit = 'bps'
               @attributes[name].acronym = 'NET TX'
