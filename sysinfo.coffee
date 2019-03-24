@@ -92,7 +92,7 @@ module.exports = (env) ->
             'freeMemory', 'freeMemoryPercent', 'processes',
             'temperature', 'temperatureF', 'dbSize', 'diskUsagePercent',
             'memoryRss','memoryHeapUsed', 'memoryHeapTotal',
-            'pimaticUptime', 'systenUptime', 'wifiSignalLevel',
+            'pimaticUptime', 'systemUptime', 'wifiSignalLevel',
             'nwThroughputReceived', 'nwThroughputSent'
           ]
 
