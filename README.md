@@ -16,14 +16,14 @@ Windows, Linux, and MacOS.
 * System temperature (Celsius ℃): `"temperature"`
 * System temperature (Fahrenheit ℉): `"temperatureF"`
 * System uptime in seconds: `"systemUptime"`
-* Pimatic SQLite database size (bytes): `"dbSize"`
-* Pimatic process RSS memory (bytes): `"rss"`
-* Pimatic process used heap memory (bytes): `"heapUsed"`
-* Pimatic process total heap memory (bytes): `"heapTotal"`
-* Pimatic process uptime (seconds): `"pimaticUptime"`
 * WiFi received signal level (dBm): `wifiSignalLevel` 
 * Network interface throughput received (bps): `nwThroughputReceived` 
 * Network interface throughput sent (bps): `nwThroughputSent` 
+* Pimatic SQLite database size (bytes): `"dbSize"`
+* Pimatic process RSS memory (bytes): `"pimaticRss"`
+* Pimatic process used heap memory (bytes): `"pimaticHeapUsed"`
+* Pimatic process total heap memory (bytes): `"pimaticHeapTotal"`
+* Pimatic process uptime (seconds): `"pimaticUptime"`
 
 Notes:
 * Database size is only applicable if builtin SQLite database
@@ -43,7 +43,9 @@ Notes:
 | dbsize | dbSize |
 | uptime | systemUptime |
 | memory | memoryUsed |
-
+| memoryRss | pimaticRss |
+| heapUsed | pimaticHeapUsed |
+| heapTotal | pimaticHeapTotal |
   
 ### Plugin Configuration
 

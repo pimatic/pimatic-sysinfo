@@ -22,7 +22,7 @@ module.exports = (env) ->
             interface: block.match(/^([^\s]+)/)[1]
           }
           if (match = block.match(/Signal level[:|=]\s*(-?[0-9]+)/))
-            parsed.signal = parseInt(match[1], 10);
+            parsed.signal = parseInt(match[1], 10)
         return parsed
 
       parseStatusInterface = (callback) ->
@@ -49,17 +49,22 @@ module.exports = (env) ->
     init: (app, @framework, @config) =>
       deviceConfigDef = require("./device-config-schema")
 
-      @framework.deviceManager.registerDeviceClass("SystemSensor", {
-        prepareConfig: SystemSensor.prepareConfig,
-        configDef: deviceConfigDef.SystemSensor, 
-        createCallback: (config) => return new SystemSensor(config, @framework)
-      })
-      si.fsSize().then( (data) ->
-        env.logger.info('Mounted File Systems: ' + data.map((el) -> el.fs).join(", "))
-      )
-      si.networkInterfaces().then( (data) ->
-        env.logger.info('Network Interfaces: ' + data.map((el) -> el.iface).join(", "))
-      )
+      Promise.each [
+        () =>
+          @framework.deviceManager.registerDeviceClass("SystemSensor", {
+            prepareConfig: SystemSensor.prepareConfig,
+            configDef: deviceConfigDef.SystemSensor,
+            createCallback: (config) => return new SystemSensor(config, @framework)
+          })
+        () ->
+          si.fsSize().then( (data) ->
+            env.logger.info('Mounted File Systems: ' + data.map((el) -> el.fs).join(", "))
+          )
+        () ->
+          si.networkInterfaces().then( (data) ->
+            env.logger.info('Network Interfaces: ' + data.map((el) -> el.iface).join(", "))
+          )
+      ], (f) => f()
 
   # ##SystemSensor Sensor
   class SystemSensor extends env.devices.Sensor
@@ -70,6 +75,9 @@ module.exports = (env) ->
         memory: 'usedMemory'
         memoryPercent: 'usedMemoryPercent'
         uptime: 'systemUptime'
+        memoryRss: 'pimaticRss'
+        memoryHeapUsed: 'pimaticHeapUsed'
+        memoryHeapTotal: 'pimaticHeapTotal'
       keys = Object.keys
       for attr in config.attributes
         do (attr) =>
@@ -91,9 +99,10 @@ module.exports = (env) ->
             'cpu', 'usedMemory', 'usedMemoryPercent',
             'freeMemory', 'freeMemoryPercent', 'processes',
             'temperature', 'temperatureF', 'dbSize', 'diskUsagePercent',
-            'memoryRss','memoryHeapUsed', 'memoryHeapTotal',
-            'pimaticUptime', 'systemUptime', 'wifiSignalLevel',
-            'nwThroughputReceived', 'nwThroughputSent'
+            'systemUptime', 'wifiSignalLevel',
+            'nwThroughputReceived', 'nwThroughputSent',
+            'pimaticRss', 'pimaticHeapUsed',
+            'pimaticHeapTotal', 'pimaticUptime',
           ]
 
           @attributes[name] = {
@@ -137,7 +146,7 @@ module.exports = (env) ->
             when "freeMemoryPercent"
               getter = ( =>
                 return si.mem().then( (res) ->
-                    return Math.round(res.free / res.total * 1000) / 10
+                  return Math.round(res.free / res.total * 1000) / 10
                 )
               )
               @attributes[name].unit = '%'
@@ -150,15 +159,15 @@ module.exports = (env) ->
               )
               @attributes[name].unit = ''
               @attributes[name].acronym = 'PROCS'
-            when "memoryRss"
+            when "pimaticRss"
               getter = ( => Promise.resolve(process.memoryUsage().rss) )
               @attributes[name].unit = 'B'
               @attributes[name].acronym = 'RSS'
-            when "memoryHeapUsed"
+            when "pimaticHeapUsed"
               getter = ( => Promise.resolve(process.memoryUsage().heapUsed) )
               @attributes[name].unit = 'B'
               @attributes[name].acronym = 'HEAP'
-            when "memoryHeapTotal"
+            when "pimaticHeapTotal"
               getter = ( => Promise.resolve(process.memoryUsage().heapTotal) )
               @attributes[name].unit = 'B'
               @attributes[name].acronym = 'T HEAP'
@@ -170,7 +179,7 @@ module.exports = (env) ->
                   if match.length > 0
                     return Math.round(match[0].use * 10) / 10
                   else
-                    return -1
+                    throw new Error "File system info is not available. Check mount path"
                 )
               )
               @attributes[name].unit = '%'
@@ -231,7 +240,10 @@ module.exports = (env) ->
                   if not res[0]? or res[0].operstate is 'unknown'
                     throw new Error "Network interface is not available. Check interface name"
                   else
-                    return res[0].rx_sec * 8
+                    if res[0].rx_sec > 0
+                      return res[0].rx_sec * 8
+                    else
+                      return 0
                 )
               )
               @attributes[name].unit = 'bps'
@@ -242,7 +254,10 @@ module.exports = (env) ->
                   if not res[0]? or res[0].operstate is 'unknown'
                     throw new Error "Network interface is not available. Check interface name"
                   else
-                    return res[0].tx_sec * 8
+                    if res[0].tx_sec > 0
+                      return res[0].tx_sec * 8
+                    else
+                      return 0
                 )
               )
               @attributes[name].unit = 'bps'

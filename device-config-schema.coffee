@@ -19,10 +19,10 @@ module.exports = {
                 "cpu", "usedMemory", "usedMemoryPercent",
                 "freeMemory", "freeMemoryPercent", "processes",
                 "temperature", "temperatureF", "dbSize",
-                "diskUsagePercent", "memoryRss",
-                "memoryHeapUsed", "memoryHeapTotal",
-                "pimaticUptime", "systemUptime", "wifiSignalLevel"
-                "nwThroughputReceived", "nwThroughputSent"
+                "diskUsagePercent", "systemUptime", "wifiSignalLevel"
+                "nwThroughputReceived", "nwThroughputSent",
+                "pimaticRss", "pimaticHeapUsed",
+                "pimaticHeapTotal", "pimaticUptime",
               ]
             interval:
               type: "integer"

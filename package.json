@@ -30,8 +30,11 @@
     "diskspace"
   ],
   "dependencies": {
-    "systeminformation": "^4.1.1"
+    "systeminformation": "^4.1.3"
   },
+  "bundledDependencies": [
+    "systeminformation"
+  ],
   "peerDependencies": {
     "pimatic": "0.9.*"
   },
