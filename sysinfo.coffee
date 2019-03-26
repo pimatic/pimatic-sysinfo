@@ -58,7 +58,7 @@ module.exports = (env) ->
           })
         () ->
           si.fsSize().then( (data) ->
-            env.logger.info('Mounted File Systems: ' + data.map((el) -> el.fs).join(", "))
+            env.logger.info('Mounted File Systems: ' + data.map((el) -> el.mount).join(", "))
           )
         () ->
           si.networkInterfaces().then( (data) ->
