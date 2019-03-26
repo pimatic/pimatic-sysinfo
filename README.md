@@ -1,8 +1,13 @@
 pimatic-sysinfo
 ===============
 
-Plugin for displaying cpu, memory usage and temperature of the pimatic system. It supports pimatic setups on 
-Windows, Linux, and MacOS.
+Plugin for displaying  system and process information such as CPU and Memory usage 
+ for pimatic setups on Linux and Windows. MacOS should also work, but has not been tested. 
+ 
+The plugin is based on the 
+ [systeminformation project](https://github.com/sebhildebrandt/systeminformation) 
+ developed by Sebastian Hildebrandt which realizes a lightweight abstraction layer 
+ for the acquisition of system information on various operating systems.
 
 ### Supported values:
 

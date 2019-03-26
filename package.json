@@ -1,6 +1,6 @@
 {
   "name": "pimatic-sysinfo",
-  "description": "pimatic plugin for displaying cpu, memory usage and temperature of the raspberry pi.",
+  "description": "pimatic plugin for displaying system and process information such as CPU and Memory usage",
   "author": "Oliver Schneider <oliverschneider89+sweetpi@gmail.com> (http://pimatic.org)",
   "license": "GPL-2.0",
   "main": "sysinfo",
