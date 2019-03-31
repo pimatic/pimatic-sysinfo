@@ -22,12 +22,13 @@
   "icon": "icon.svg",
   "keywords": [
     "pimatic",
-    "devices",
-    "system info",
+    "pimatic-plugin",
+    "system-info",
     "sysinfo",
-    "cpu",
-    "memory",
-    "diskspace"
+    "monitoring",
+    "memory-usage",
+    "cpu-monitoring",
+    "network-monitoring"
   ],
   "dependencies": {
     "systeminformation": "^4.1.3"
