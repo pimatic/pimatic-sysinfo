@@ -12,10 +12,10 @@ The plugin is based on the
 ### Supported values:
 
 * CPU usage (percent): `"cpu"`
-* Memory usage (bytes): `"memoryUsed"`
-* Memory usage (percent): `"memoryUsedPercent"`
-* Memory free (bytes): `"memoryFree"`
-* Memory free (percent): `"memoryFreePercent"`
+* Memory active usage (bytes): `"memoryUsed"`
+* Memory active usage (percent): `"memoryUsedPercent"`
+* Memory free, including cache & buffers (bytes): `"memoryFree"`
+* Memory free, including cache & buffers (percent): `"memoryFreePercent"`
 * Disk usage (percent) for a single mount point: `"diskUsage"`
 * Number of processes: `"processes"`
 * System temperature (Celsius ℃): `"temperature"`
@@ -37,10 +37,17 @@ Notes:
   (that is a subset of the total allocated memory) for the 
   process, which includes the heap, code segment and stack
 * The attribute `wifiSignalLevel` is currently only supported on Linux
-* The spelling for some attributes has been changed in release 0.9.5. The device 
-  configuration setup for earlier releases will be transformed 
+* The spelling for some attributes has been changed in release 0.9.5. The
+  device configuration setup for earlier releases will be transformed 
   automatically. However, you may need to update references in rule and
   variable definitions. See table below.
+* Version 0.9.5 provided different values for memory usage 
+  than earlier versions of the plugin. The value 
+  for `"memoryUsed"` also included reclaimable cache 
+  and buffer space while earlier versions only measured the 
+  active memory usage. Since Version 0.9.6 this has been 
+  changed back to monitoring active and 
+  available (total - active) memory. 
 
 | old | new |
 |:----|-----|

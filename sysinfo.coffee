@@ -122,7 +122,7 @@ module.exports = (env) ->
             when "usedMemory"
               getter = ( =>
                 return si.mem().then( (res) ->
-                  return res.used
+                  return res.active
                 )
               )
               @attributes[name].unit = 'B'
@@ -130,7 +130,7 @@ module.exports = (env) ->
             when "usedMemoryPercent"
               getter = ( =>
                 return si.mem().then( (res) ->
-                  return Math.round(res.used / res.total * 1000) / 10
+                  return Math.round(res.active / res.total * 1000) / 10
                 )
               )
               @attributes[name].unit = '%'
@@ -138,7 +138,7 @@ module.exports = (env) ->
             when "freeMemory"
               getter = ( =>
                 return si.mem().then( (res) ->
-                  return res.free
+                  return res.available
                 )
               )
               @attributes[name].unit = 'B'
@@ -146,7 +146,7 @@ module.exports = (env) ->
             when "freeMemoryPercent"
               getter = ( =>
                 return si.mem().then( (res) ->
-                  return Math.round(res.free / res.total * 1000) / 10
+                  return Math.round(res.available / res.total * 1000) / 10
                 )
               )
               @attributes[name].unit = '%'
