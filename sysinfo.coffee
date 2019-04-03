@@ -11,7 +11,6 @@ module.exports = (env) ->
 
   si = require('systeminformation')
 
-
   wifiStatus = (ifName) ->
     if process.platform is 'linux'
 
@@ -54,7 +53,8 @@ module.exports = (env) ->
           @framework.deviceManager.registerDeviceClass("SystemSensor", {
             prepareConfig: SystemSensor.prepareConfig,
             configDef: deviceConfigDef.SystemSensor,
-            createCallback: (config) => return new SystemSensor(config, @framework)
+            createCallback: (config) =>
+              return new SystemSensor(config, @framework, deviceConfigDef.SystemSensor)
           })
         () ->
           si.fsSize().then( (data) ->
@@ -86,193 +86,177 @@ module.exports = (env) ->
               attr.name = val
               break
 
-    constructor: (@config, framework) ->
+    constructor: (@config, framework, configDef) ->
       @id = @config.id
       @name = @config.name
+      schema = configDef.properties
+      initError = null
 
       @attributes = {}
+
       # initialise all attributes
       for attr, i in @config.attributes
         do (attr) =>
-          name = attr.name
-          assert name in [
-            'cpu', 'usedMemory', 'usedMemoryPercent',
-            'freeMemory', 'freeMemoryPercent', 'processes',
-            'temperature', 'temperatureF', 'dbSize', 'diskUsagePercent',
-            'systemUptime', 'wifiSignalLevel',
-            'nwThroughputReceived', 'nwThroughputSent',
-            'pimaticRss', 'pimaticHeapUsed',
-            'pimaticHeapTotal', 'pimaticUptime',
-          ]
-
-          @attributes[name] = {
-            description: name
-            type: "number"
-          }
-
-          switch name
-            when "cpu"
-              getter = ( =>
-                return si.currentLoad().then( (res) =>
-                  return Math.round(res.currentload * 10) / 10
-                )
-              )
-              @attributes[name].unit = '%'
-              @attributes[name].acronym = 'CPU'
-            when "usedMemory"
-              getter = ( =>
-                return si.mem().then( (res) ->
-                  return res.active
-                )
-              )
-              @attributes[name].unit = 'B'
-              @attributes[name].acronym = 'M USED'
-            when "usedMemoryPercent"
-              getter = ( =>
-                return si.mem().then( (res) ->
-                  return Math.round(res.active / res.total * 1000) / 10
-                )
-              )
-              @attributes[name].unit = '%'
-              @attributes[name].acronym = 'M USED%'
-            when "freeMemory"
-              getter = ( =>
-                return si.mem().then( (res) ->
-                  return res.available
-                )
-              )
-              @attributes[name].unit = 'B'
-              @attributes[name].acronym = 'M FREE'
-            when "freeMemoryPercent"
-              getter = ( =>
-                return si.mem().then( (res) ->
-                  return Math.round(res.available / res.total * 1000) / 10
-                )
-              )
-              @attributes[name].unit = '%'
-              @attributes[name].acronym = 'M FREE%'
-            when "processes"
-              getter = ( =>
-                return si.processes().then( (res) ->
-                  return res.all
-                )
-              )
-              @attributes[name].unit = ''
-              @attributes[name].acronym = 'PROCS'
-            when "pimaticRss"
-              getter = ( => Promise.resolve(process.memoryUsage().rss) )
-              @attributes[name].unit = 'B'
-              @attributes[name].acronym = 'RSS'
-            when "pimaticHeapUsed"
-              getter = ( => Promise.resolve(process.memoryUsage().heapUsed) )
-              @attributes[name].unit = 'B'
-              @attributes[name].acronym = 'HEAP'
-            when "pimaticHeapTotal"
-              getter = ( => Promise.resolve(process.memoryUsage().heapTotal) )
-              @attributes[name].unit = 'B'
-              @attributes[name].acronym = 'T HEAP'
-            when "diskUsagePercent"
-              mountPath = attr.path?.toUpperCase() or '/'
-              getter = ( =>
-                return si.fsSize().then( (res) ->
-                  match = (res.filter (i) -> i.mount.toUpperCase() is mountPath)
-                  if match.length > 0
-                    return Math.round(match[0].use * 10) / 10
-                  else
-                    throw new Error "File system info is not available. Check mount path"
-                )
-              )
-              @attributes[name].unit = '%'
-              @attributes[name].acronym = 'DISK%'
-            when "temperature"
-              getter = ( =>
-                return si.cpuTemperature().then( (res) ->
-                  return Math.round(res.main * 10) / 10
-                )
-              )
-              @attributes[name].unit = '°C'
-              @attributes[name].acronym = 'T'
-            when "temperatureF"
-              getter = ( =>
-                return si.cpuTemperature().then( (res) ->
-                  if res.main >= 0
-                    return (res.main * 9/5) + 32
-                  else
-                    return res.main
-                )
-              )
-              @attributes[name].unit = '°F'
-              @attributes[name].acronym = 'T'
-            when "dbSize"
-              path = env.require 'path'
-              databaseConfig = framework.config.settings.database
-              unless databaseConfig.client is "sqlite3"
-                throw new Error("dbSize is only supported for SQLite3")
-              filename = path.resolve framework.maindir, '../..', databaseConfig.connection.filename
-              getter = ( =>
-                return fs.statAsync(filename).then( (stats) ->
-                  return  stats.size
-                )
-              )
-              @attributes[name].unit = 'B'
-              @attributes[name].acronym = 'DB SZ'
-            when "systemUptime"
-              os = env.require 'os'
-              getter = ( => Promise.resolve(os.uptime()) )
-              @attributes[name].unit = 's'
-              @attributes[name].acronym = 'OS UP'
-            when "pimaticUptime"
-              getter = ( => Promise.resolve(process.uptime()) )
-              @attributes[name].unit = 's'
-              @attributes[name].acronym = 'PROC UP'
-            when "wifiSignalLevel"
-              networkInterface = attr.networkInterface or 'wlan0'
-              getter = ( =>
-                return wifiStatus(networkInterface).then( (res) ->
-                  return res.signal
-                )
-              )
-              @attributes[name].unit = 'dBm'
-              @attributes[name].acronym = 'RSL'
-            when "nwThroughputReceived"
-              getter = ( =>
-                return si.networkStats(networkInterface).then( (res) ->
-                  if not res[0]? or res[0].operstate is 'unknown'
-                    throw new Error "Network interface is not available. Check interface name"
-                  else
-                    if res[0].rx_sec > 0
-                      return res[0].rx_sec * 8
-                    else
-                      return 0
-                )
-              )
-              @attributes[name].unit = 'bps'
-              @attributes[name].acronym = 'NET RX'
-            when "nwThroughputSent"
-              getter = ( =>
-                return si.networkStats(networkInterface).then( (res) ->
-                  if not res[0]? or res[0].operstate is 'unknown'
-                    throw new Error "Network interface is not available. Check interface name"
-                  else
-                    if res[0].tx_sec > 0
-                      return res[0].tx_sec * 8
-                    else
-                      return 0
-                )
-              )
-              @attributes[name].unit = 'bps'
-              @attributes[name].acronym = 'NET TX'
+          try
+            name = attr.name
+            if name in schema.attributes.items.properties.name.enum
+              @attributes[name] = {
+                description: name
+                type: "number"
+              }
             else
               throw new Error("Illegal attribute name: #{name} in SystemSensor.")
-          if @attributes[name].additionalCB?
-            @attributes[name].additionalCB().catch( (error) ->
-              env.logger.error "Attribute #{name}:", error.message
-            )
-          # Create a getter for this attribute
-          @_createGetter(name, getter)
-          # setup polling
-          @_setupPolling(name, attr.interval or 10000, @attributes[name].additionalCB)    
+
+            switch name
+              when "cpu"
+                getter = ( =>
+                  return si.currentLoad().then (res) =>
+                    Math.round(res.currentload * 10) / 10
+                )
+                @attributes[name].unit = '%'
+                @attributes[name].acronym = 'CPU'
+              when "usedMemory"
+                getter = ( =>
+                  return si.mem().then (res) -> res.active
+                )
+                @attributes[name].unit = 'B'
+                @attributes[name].acronym = 'M USED'
+              when "usedMemoryPercent"
+                getter = ( =>
+                  return si.mem().then (res) ->
+                    Math.round(res.active / res.total * 1000) / 10
+                )
+                @attributes[name].unit = '%'
+                @attributes[name].acronym = 'M USED%'
+              when "freeMemory"
+                getter = ( =>
+                  return si.mem().then (res) -> res.available
+                )
+                @attributes[name].unit = 'B'
+                @attributes[name].acronym = 'M FREE'
+              when "freeMemoryPercent"
+                getter = ( =>
+                  return si.mem().then (res) ->
+                    Math.round(res.available / res.total * 1000) / 10
+                )
+                @attributes[name].unit = '%'
+                @attributes[name].acronym = 'M FREE%'
+              when "processes"
+                getter = ( =>
+                  return si.processes().then (res) -> res.all
+                )
+                @attributes[name].unit = ''
+                @attributes[name].acronym = 'PROCS'
+              when "pimaticRss"
+                getter = ( => Promise.resolve(process.memoryUsage().rss) )
+                @attributes[name].unit = 'B'
+                @attributes[name].acronym = 'RSS'
+              when "pimaticHeapUsed"
+                getter = ( => Promise.resolve(process.memoryUsage().heapUsed) )
+                @attributes[name].unit = 'B'
+                @attributes[name].acronym = 'HEAP'
+              when "pimaticHeapTotal"
+                getter = ( => Promise.resolve(process.memoryUsage().heapTotal) )
+                @attributes[name].unit = 'B'
+                @attributes[name].acronym = 'T HEAP'
+              when "diskUsagePercent"
+                mountPath = attr.path?.toUpperCase() or '/'
+                getter = ( =>
+                  return si.fsSize().then( (res) ->
+                    match = (res.filter (i) -> i.mount.toUpperCase() is mountPath)
+                    if match.length > 0
+                      return Math.round(match[0].use * 10) / 10
+                    else
+                      throw new Error "File system info is not available. Check mount path"
+                  )
+                )
+                @attributes[name].unit = '%'
+                @attributes[name].acronym = 'DISK%'
+              when "temperature"
+                getter = ( =>
+                  return si.cpuTemperature().then (res) ->
+                    Math.round(res.main * 10) / 10
+                )
+                @attributes[name].unit = '°C'
+                @attributes[name].acronym = 'T'
+              when "temperatureF"
+                getter = ( =>
+                  si.cpuTemperature().then (res) ->
+                    if res.main >= 0
+                      return (res.main * 9/5) + 32
+                    else
+                      return res.main
+                )
+                @attributes[name].unit = '°F'
+                @attributes[name].acronym = 'T'
+              when "dbSize"
+                path = env.require 'path'
+                databaseConfig = framework.config.settings.database
+                unless databaseConfig.client is "sqlite3"
+                  throw new Error("dbSize is only supported for SQLite3")
+                filename = path.resolve framework.maindir, '../..', databaseConfig.connection.filename
+                getter = ( =>
+                  return fs.statAsync(filename).then (stats) -> stats.size
+                )
+                @attributes[name].unit = 'B'
+                @attributes[name].acronym = 'DB SZ'
+              when "systemUptime"
+                os = env.require 'os'
+                getter = ( => Promise.resolve(os.uptime()) )
+                @attributes[name].unit = 's'
+                @attributes[name].acronym = 'OS UP'
+              when "pimaticUptime"
+                getter = ( => Promise.resolve(process.uptime()) )
+                @attributes[name].unit = 's'
+                @attributes[name].acronym = 'PROC UP'
+              when "wifiSignalLevel"
+                networkInterface = attr.networkInterface or 'wlan0'
+                getter = ( =>
+                  return wifiStatus(networkInterface).then (res) -> res.signal
+                )
+                @attributes[name].unit = 'dBm'
+                @attributes[name].acronym = 'RSL'
+              when "nwThroughputReceived"
+                getter = ( =>
+                  return si.networkStats(networkInterface).then( (res) ->
+                    if not res[0]? or res[0].operstate is 'unknown'
+                      throw new Error "Network interface is not available. Check interface name"
+                    else
+                      if res[0].rx_sec > 0
+                        return res[0].rx_sec * 8
+                      else
+                        return 0
+                  )
+                )
+                @attributes[name].unit = 'bps'
+                @attributes[name].acronym = 'NET RX'
+              when "nwThroughputSent"
+                getter = ( =>
+                  return si.networkStats(networkInterface).then( (res) ->
+                    if not res[0]? or res[0].operstate is 'unknown'
+                      throw new Error "Network interface is not available. Check interface name"
+                    else
+                      if res[0].tx_sec > 0
+                        return res[0].tx_sec * 8
+                      else
+                        return 0
+                  )
+                )
+                @attributes[name].unit = 'bps'
+                @attributes[name].acronym = 'NET TX'
+              else
+                throw new Error("Illegal attribute name: #{name} in SystemSensor.")
+
+            # Create a getter for this attribute
+            @_createGetter(name, getter)
+            # setup polling
+            @_setupPolling(name, attr.interval or 10000)
+          catch err
+            env.logger.error err.message
+            initError = err
       super()
+      throw initError if initError?
+
 
     destroy: ->
       super()
