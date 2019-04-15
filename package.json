@@ -12,7 +12,7 @@
     "device-config-schema.coffee",
     "icon.svg"
   ],
-  "version": "0.9.5",
+  "version": "0.9.6",
   "homepage": "http://github.com/pimatic/pimatic-sysinfo",
   "repository": {
     "type": "git",

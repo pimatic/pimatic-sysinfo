@@ -1,5 +1,12 @@
 # Release History
 
+* 20190416, V0.9.6
+    * Improved error handling on device initialization, replaced 
+      assertion with more meaningful error handling
+    * Attributes for used and free memory now provide values for 
+      active and available memory (see README), issue #19
+    * dump mount path instead of file system path on startup
+    
 * 20190325, V0.9.5
     * Plugin is now based on systeminformation package 
       to support setups on Linux and Windows. MacOS should also work, 
