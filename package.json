@@ -31,7 +31,7 @@
     "network-monitoring"
   ],
   "dependencies": {
-    "systeminformation": "^4.1.3"
+    "systeminformation": "^4.1.4"
   },
   "bundledDependencies": [
     "systeminformation"
